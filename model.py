@@ -18,4 +18,5 @@ class Resblock(Block):
             
     def forward(self, x):
         output = self.resblock(x)
-        return output+x
+        x += output
+        return x
