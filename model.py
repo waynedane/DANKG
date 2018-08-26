@@ -57,10 +57,18 @@ class Encoder(Block):
         self.ffn2 = ResBlock(2*self.model_dim)
         self.W_G = nn.Dense(1, in_units= 4*self.model_dim)
         self. ffn3 = ResBlock(2*self.model_dim)
-    def forward(self, x, y, x_mask, y_mask):
+     def forward(self, x, y, x_mask, y_mask):
         h_H,_ = self.title_lstm(x)
         h_S,_ = self.abstract_lstm(y)
-        u_H,_ = self.ta_mutal(h_S, h_S, h_H, y_mask)
-        h_S_hat,_ = self.at_mutal(h_H, h_H, h_S, x_mask)
+        u_H,_ = self.ta_mutal(h_H, h_S, h_S, y_mask)
+        h_S_hat,_ = self.at_mutal(h_S, h_H, h_H, x_mask)
         u_H = self.ffn1(u_H)
-        return h_H
+        G_t = nd.sigmoid(self.W_G(nd.concat(h_S, h_S_hat, dim = -1))).squeeze()
+        h_S_ = nd.stack([nd.broadcast_mul(i,j.unsqueeze(1)) for (i,j) in zip(h_S, G_t)])
+        u_S = self.ffn2(h_S_hat + h_S_)
+        u_X = nd.concat(u_H, u_S, dim =1)
+        u_X, weight = self.self_attn(u_X, u_X, u_X)
+        u_X = self.ffn3(u_X)
+        s = self.final_linear(self.title_linear(h_H[:,-1,:])+ self.abstract_linear(h_S[:,-1,:]))
+        
+        return s, u_X, weight
