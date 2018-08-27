@@ -48,11 +48,11 @@ class Encoder(Block):
         self.abstract_linear = nn.Dense(self.model_dim, in_units= 2*self.model_dim)
         self.final_linear = nn.Dense(self.model_dim, in_units= self.model_dim)
         self.ta_mutal = MultiHeadAttentionCell(base_cell=base_cell, 
-                                               query_units= self.model_dim, use_bias=True,
-                                          key_units = self.model_dim, value_units= self.model_dim, num_heads=8)
+                                               query_units= 2*self.model_dim, use_bias=True,
+                                          key_units = 2*self.model_dim, value_units= 2*self.model_dim, num_heads=8)
         self.ta_mutal = MultiHeadAttentionCell(base_cell=base_cell, 
-                                               query_units= self.model_dim, use_bias=True,
-                                          key_units = self.model_dim, value_units= self.model_dim, num_heads=8)
+                                               query_units= 2*self.model_dim, use_bias=True,
+                                          key_units = 2*self.model_dim, value_units= 2*self.model_dim, num_heads=8)
         self.ffn1 = ResBlock(2*self.model_dim)
         self.ffn2 = ResBlock(2*self.model_dim)
         self.W_G = nn.Dense(1, in_units= 4*self.model_dim)
@@ -72,3 +72,32 @@ class Encoder(Block):
         s = self.final_linear(self.title_linear(h_H[:,-1,:])+ self.abstract_linear(h_S[:,-1,:]))
         
         return s, u_X, weight
+ 
+class Decoder(Block):
+    def __init__(self, embedding_dim, model_dim, dropout, vocab_size, extended_size):
+        super(Decoder,self).__init__()
+        self.embedding_dim = embedding_dim
+        self.model_dim = model_dim
+        self.dropout = dropout
+        self.vocab_size = vocab_size
+        self.extended.size = extended_size
+        self.decoder_ltsm = rnn.LSTM(
+            2*self.model_dim, layout='NTC', 
+            input_size= self.embedding_dim, 
+            i2h_weight_initializer= 'Orthogonal',
+        h2h_weight_initializer = 'Orthogonal')
+        self.self_attn = MultiHeadAttentionCell(base_cell=base_cell, 
+                                               query_units= 2*self.model_dim, use_bias=True,
+                                          key_units = 2*self.model_dim, value_units= 2*self.model_dim, num_heads=8)
+        self.fnn = Resblock(2*self.model_dim)
+        self.V1 = nn.Dense(2*self.model_dim, in_units= 3*self.model_dim)
+        self.V2 = nn.Dense(self.vocab_size, in_units= 2*self.model_dim)
+        self.W_c = nn.Dense(1)
+        self.W_s = nn.Dense(1)
+        self.W_x = nn.Dense(1)
+ 
+
+    def forward(self,x, hidden, cell, u_X, indice, mask):
+        batch_size = u_X.size(0)
+        s_t, (hidden, cell) = self.decoder_lstm(x, (hidden,cell))
+        pass
