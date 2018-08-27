@@ -47,6 +47,9 @@ class Encoder(Block):
         self.title_linear = nn.Dense(self.model_dim, in_units= 2*self.model_dim)
         self.abstract_linear = nn.Dense(self.model_dim, in_units= 2*self.model_dim)
         self.final_linear = nn.Dense(self.model_dim, in_units= self.model_dim)
+        
+       
+        
         self.ta_mutal = MultiHeadAttentionCell(base_cell=base_cell, 
                                                query_units= 2*self.model_dim, use_bias=True,
                                           key_units = 2*self.model_dim, value_units= 2*self.model_dim, num_heads=8)
@@ -70,11 +73,11 @@ class Encoder(Block):
         u_X, weight = self.self_attn(u_X, u_X, u_X)
         u_X = self.ffn3(u_X)
         s = self.final_linear(self.title_linear(h_H[:,-1,:])+ self.abstract_linear(h_S[:,-1,:]))
-        
+
         return s, u_X, weight
  
 class Decoder(Block):
-    def __init__(self, embedding_dim, model_dim, dropout, vocab_size, extended_size):
+    def __init__(self, embedding_dim, model_dim, dropout, vocab_size, extended_size，):
         super(Decoder,self).__init__()
         self.embedding_dim = embedding_dim
         self.model_dim = model_dim
@@ -100,4 +103,12 @@ class Decoder(Block):
     def forward(self,x, hidden, cell, u_X, indice, mask):
         batch_size = u_X.size(0)
         s_t, (hidden, cell) = self.decoder_lstm(x, (hidden,cell))
-        pass
+        c_t, weight = sel.fnn(self.self_attn(s_t, u_X, u_X))
+        P_g = nd.log_softmax(self.V2(self.V1(nd.concat(s_t,c_t,dim=-1))))
+        p_g = nd.sigmoid(self.W_c(c_t) + self.W_s(s_t) + self.W_x(x))
+        P_g = nd.concat(P_g,nd.zeros(batch_size, self.extended_size),dim = -1)
+        p_c = 1-p_g 
+    
+    def begin_cell(self, hidden)：
+        cell = mx.nd.random.uniform(shape = hidden.shape)
+        return cell
