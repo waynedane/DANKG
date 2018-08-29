@@ -1,8 +1,4 @@
 import mxnet as mx
-import gluonnlp.model.MultiHeadAttentionCell as multihead
-from mxnet.gluon import Block, nn
-
-import mxnet as mx
 from mxnet import nd
 from gluonnlp.model import MultiHeadAttentionCell,DotProductAttentionCell
 from mxnet.gluon import Block, nn, rnn
