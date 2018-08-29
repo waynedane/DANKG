@@ -108,6 +108,13 @@ class Decoder(Block):
         p_g = nd.sigmoid(self.W_c(c_t) + self.W_s(s_t) + self.W_x(x))
         P_g = nd.concat(P_g,nd.zeros(batch_size, self.extended_size),dim = -1)
         p_c = 1-p_g 
+        P_g = nd.zeros([batch_size, self.extended_size])
+        for i in range(batch_size):
+            for j in range(self.extend_size):
+                x[i][indice[i][j]] += weight[i][j]
+        final_distribution = nd.mul(P_g,p_g) + nd.mul(P_c, p_c)
+        
+        return final_distribution, hidden, cell, weight 
     
     def begin_cell(self, hidden)：
         cell = mx.nd.random.uniform(shape = hidden.shape)
