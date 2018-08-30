@@ -1,8 +1,8 @@
 import mxnet as mx
 from mxnet import nd
 from gluonnlp.model import MultiHeadAttentionCell,DotProductAttentionCell
-from mxnet.gluon import Block, nn
-import rnn
+from mxnet.gluon import Block, nn, rnn
+import RNN
 
 base_cell = DotProductAttentionCell(scaled=True, dropout = 0.5)
 
@@ -32,9 +32,9 @@ class Encoder(Block):
         self.head_count = head_count
         self.model_dim = model_dim
         self.drop_prob = drop_prob
-        self.title_lstm = rnn.LSTM(
+        self.title_lstm = RNN.LSTM(
             self.embedding_dim, self.model_dim, True, self.drop_prob)
-        self.abstract_lstm = rnn.LSTM(
+        self.abstract_lstm = RNN.LSTM(
             self.embedding_dim, self.model_dim, True, self.drop_prob)
         self.title_linear = nn.Dense(self.model_dim, in_units= 2*self.model_dim)
         self.abstract_linear = nn.Dense(self.model_dim, in_units= 2*self.model_dim)
