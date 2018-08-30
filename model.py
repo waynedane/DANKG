@@ -26,21 +26,16 @@ class Resblock(Block):
 
 class Encoder(Block):
     
-    def __init__(self, embedding_dim, head_count, model_dim, dropout):
+    def __init__(self, embedding_dim, head_count, model_dim, drop_prob, dropout):
         super(Encoder, self).__init__()
         self.embedding_dim = embedding_dim
         self.head_count = head_count
         self.model_dim = model_dim
+        self.drop_prob = drop_prob
         self.title_lstm = rnn.LSTM(
-            self.model_dim, layout='NTC', 
-            bidirectional=True, input_size= self.embedding_dim, 
-            i2h_weight_initializer= 'Orthogonal',
-        h2h_weight_initializer = 'Orthogonal')
+            self.embedding_dim, self.model_dim, True, self.drop_prob)
         self.abstract_lstm = rnn.LSTM(
-            self.model_dim, layout='NTC', 
-            bidirectional=True, input_size= self.embedding_dim, 
-            i2h_weight_initializer= 'Orthogonal',
-        h2h_weight_initializer = 'Orthogonal')
+            self.embedding_dim, self.model_dim, True, self.drop_prob)
         self.title_linear = nn.Dense(self.model_dim, in_units= 2*self.model_dim)
         self.abstract_linear = nn.Dense(self.model_dim, in_units= 2*self.model_dim)
         self.final_linear = nn.Dense(self.model_dim, in_units= self.model_dim)
