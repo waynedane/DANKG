@@ -42,10 +42,11 @@ class LSTM(Block):
         
    def forward(self, x, mask):
         mask = (x!=0)
-        mask = mask.expand_dims(axis=-1)
         length = mask.sum(1)
+        mask = mask.expand_dims(axis=-1)
         outputs, _ = self.rnn(x) #outputs:[batch, seq_length, 2*num_hiddens]
-        outputs = outputs*mask
+        outputs = outputs.transpose(0,1)
+        outputs = nd.SequenceMask(outputs, sequence_length=lenghth,use_sequence_length=True, value=0)
         hidden = nd.stack([outputs[:,i,:] for i in length])
         
-        return outputs, hidden
+        return outputs.transpose(0,1), hidden
