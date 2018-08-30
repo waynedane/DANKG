@@ -1,7 +1,8 @@
 import mxnet as mx
 from mxnet import nd
 from gluonnlp.model import MultiHeadAttentionCell,DotProductAttentionCell
-from mxnet.gluon import Block, nn, rnn
+from mxnet.gluon import Block, nn
+import rnn
 
 base_cell = DotProductAttentionCell(scaled=True, dropout = 0.5)
 
