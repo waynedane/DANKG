@@ -44,12 +44,12 @@ class Encoder(Block):
         
         self.ta_mutal = MultiHeadAttentionCell(base_cell=base_cell, 
                                                query_units= 2*self.model_dim, use_bias=True,
-                                          key_units = 2*self.model_dim, value_units= 2*self.model_dim, num_heads=8)
+                                          key_units = 2*self.model_dim, value_units= 2*self.model_dim, num_heads=self.head_count)
         self.ta_mutal = MultiHeadAttentionCell(base_cell=base_cell, 
                                                query_units= 2*self.model_dim, use_bias=True,
-                                          key_units = 2*self.model_dim, value_units= 2*self.model_dim, num_heads=8)
-        self.ffn1 = ResBlock(2*self.model_dim)
-        self.ffn2 = ResBlock(2*self.model_dim)
+                                          key_units = 2*self.model_dim, value_units= 2*self.model_dim, num_heads=self.head_count)
+        self.ffn1 = ResBlock(2*self.model_dim, self.dropout)
+        self.ffn2 = ResBlock(2*self.model_dim, self.dropout)
         self.W_G = nn.Dense(1, in_units= 4*self.model_dim)
         self. ffn3 = ResBlock(2*self.model_dim)
      def forward(self, x, y, x_mask, y_mask):
@@ -69,11 +69,12 @@ class Encoder(Block):
         return s, u_X, weight
  
 class Decoder(Block):
-    def __init__(self, embedding_dim, model_dim, dropout, vocab_size, extended_size):
+    def __init__(self, embedding_dim, model_dim, dropout, head_count, vocab_size, extended_size):
         super(Decoder,self).__init__()
         self.embedding_dim = embedding_dim
         self.model_dim = model_dim
         self.dropout = dropout
+        self.head_count = head_count
         self.vocab_size = vocab_size
         self.extended.size = extended_size
         self.decoder_ltsm = rnn.LSTM(
@@ -83,8 +84,8 @@ class Decoder(Block):
         h2h_weight_initializer = 'Orthogonal')
         self.self_attn = MultiHeadAttentionCell(base_cell=base_cell, 
                                                query_units= 2*self.model_dim, use_bias=True,
-                                          key_units = 2*self.model_dim, value_units= 2*self.model_dim, num_heads=8)
-        self.fnn = Resblock(2*self.model_dim)
+                                          key_units = 2*self.model_dim, value_units= 2*self.model_dim, num_heads=self.head_count)
+        self.fnn = Resblock(2*self.model_dim, self.dropout)
         self.V1 = nn.Dense(2*self.model_dim, in_units= 3*self.model_dim)
         self.V2 = nn.Dense(self.vocab_size, in_units= 2*self.model_dim)
         self.W_c = nn.Dense(1)
@@ -115,4 +116,16 @@ class Decoder(Block):
 class seq2seq(block):
     def __init__(self，embedding_dim, head_count, model_dim, drop_prob, dropout, vocab_size, extended_size):
         super(seq2seq, self).__init__()
+        self.embedding_dim = embedding_dim
+        self.head_count = head_count
+        self.model_dim = model_dim
+        self.drop_prob =drop_prob
+        self.dropout = dropout
+        self.vocab_size = vcab_size
+        self.extended_size = extended_size
+        self.encoder = Encoder(self.embedding_dim, self.head_count, self.model_dim, self.drop_prob, self.dropout)
+        self.decoder = Decoder(self.embedding_dim, self.model_dim, self.dropout, self.head_count, self.vocab_size, self.extended_size)
+        
+    def forward(self,x_ti, x_ab, ti_mask, ab_mask, y, indice):
+        pass
         
