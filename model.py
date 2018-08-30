@@ -69,7 +69,7 @@ class Encoder(Block):
         return s, u_X, weight
  
 class Decoder(Block):
-    def __init__(self, embedding_dim, model_dim, dropout, vocab_size, extended_size，):
+    def __init__(self, embedding_dim, model_dim, dropout, vocab_size, extended_size):
         super(Decoder,self).__init__()
         self.embedding_dim = embedding_dim
         self.model_dim = model_dim
@@ -111,3 +111,8 @@ class Decoder(Block):
     def begin_cell(self, hidden)：
         cell = mx.nd.random.uniform(shape = hidden.shape)
         return cell
+
+class seq2seq(block):
+    def __init__(self，embedding_dim, head_count, model_dim, drop_prob, dropout, vocab_size, extended_size):
+        super(seq2seq, self).__init__()
+        
