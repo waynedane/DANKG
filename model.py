@@ -53,8 +53,8 @@ class Encoder(Block):
         self.W_G = nn.Dense(1, in_units= 4*self.model_dim)
         self. ffn3 = ResBlock(2*self.model_dim)
      def forward(self, x, y, x_mask, y_mask):
-        h_H,_ = self.title_lstm(x)
-        h_S,_ = self.abstract_lstm(y)
+        h_H,_ = self.title_lstm(x, x_mask)
+        h_S,_ = self.abstract_lstm(y, y_mask)
         u_H,_ = self.ta_mutal(h_H, h_S, h_S, y_mask)
         h_S_hat,_ = self.at_mutal(h_S, h_H, h_H, x_mask)
         u_H = self.ffn1(u_H)
