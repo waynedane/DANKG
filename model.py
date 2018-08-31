@@ -129,5 +129,10 @@ class seq2seq(block):
         self.decoder = Decoder(self.embedding_dim, self.model_dim, self.dropout, self.head_count, self.vocab_size, self.extended_size)
         
     def forward(self,x_ti, x_ab, ti_mask, ab_mask, y, indice):
-        pass
+        hidden, outputs, _ = encoder(x_ti, x_ab, ti_mask, ab_mask)
+        cell = decoder.begin_cell()
+        loss = []
+        for i in range(len(y)):
+            prediction, hidden, cell, weight = decoder(y[i], hidden, cell, outputs, indice, mask)
+           
         
