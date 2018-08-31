@@ -97,7 +97,7 @@ class Decoder(Block):
         batch_size = u_X.size(0)
         s_t, (hidden, cell) = self.decoder_lstm(x, (hidden,cell))
         c_t, weight = sel.fnn(self.self_attn(s_t, u_X, u_X))
-        P_g = nd.log_softmax(self.V2(self.V1(nd.concat(s_t,c_t,dim=-1))))
+        P_g = nd.softmax(self.V2(self.V1(nd.concat(s_t,c_t,dim=-1))))
         p_g = nd.sigmoid(self.W_c(c_t) + self.W_s(s_t) + self.W_x(x)).squeeze()
         P_g = nd.concat(P_g,nd.zeros(batch_size, self.extended_size),dim = -1)
         p_c = 1-p_g 
@@ -107,7 +107,7 @@ class Decoder(Block):
         for i in range(batch_size):
             for j in range(self.extend_size):
                 x[i][indice[i][j]] += weight[i][j]
-        final_distribution = P_g+P_c
+        final_distribution = nd.log_softmax(P_g+P_c)
         
         return final_distribution, hidden, cell, weight 
     
