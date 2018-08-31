@@ -7,5 +7,5 @@ def get_length(x):
 def return_mask(key,query):
     K = (key!=0).expand_dims(-1)
     Q =(query!=0).expand_dims(-1)
-    mask = nd.batch_dot(Q, K.tranpose(2,1))
+    mask = nd.batch_dot(Q, nd.tranpose(K, axes=(0,2,1)))
     return mask
