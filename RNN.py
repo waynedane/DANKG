@@ -40,10 +40,8 @@ class LSTM(Block):
                  input_size= num_inputs, i2h_weight_initializer ='Orthogonal', h2h_weight_initializer= 'Orthogonal'
                            )
         
-   def forward(self, x, mask):
-        mask = (x!=0)
-        length = mask.sum(1)
-        mask = mask.expand_dims(axis=-1)
+   def forward(self, x,length):
+      
         outputs, _ = self.rnn(x) #outputs:[batch, seq_length, 2*num_hiddens]
         outputs = outputs.transpose(0,1)
         outputs = nd.SequenceMask(outputs, sequence_length=lenghth,use_sequence_length=True, value=0)
