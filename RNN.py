@@ -14,11 +14,13 @@ class GRU(Block):
           input_size= num_inputs, i2h_weight_initializer ='Orthogonal', h2h_weight_initializer= 'Orthogonal'
                         )
                            
-    def forward(self, x, length):
+    def forward(self, x, hidden = None, length):
          #get length of the x
         
          #feed forward
         outputs, _ = self.rnn(x) #outputs:[batch, seq_length, 2*num_hiddens]
+        if hidden != None:
+            outputs, _ = self.rnn(x,hidden)
         outputs = outputs.transpose(1,0,2)
         outputs = nd.SequenceMask(outputs, sequence_length=lenghth,use_sequence_length=True, value=0)
         hidden = nd.stack([outputs[:,i,:] for i in length])
