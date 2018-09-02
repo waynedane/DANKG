@@ -28,7 +28,7 @@ class GRU(nn.Block):
         return outputs, hidden
     
     
-class LSTM(Block):
+class LSTM(nn.Block):
     def __init__(self, num_inputs, num_hiddens, batch_first, drop_prob):
         super(LSTM, self).__init__()
         self.drop_prob = drop_prob
