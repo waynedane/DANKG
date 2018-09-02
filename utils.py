@@ -9,3 +9,7 @@ def return_mask(key,query):
     Q =(query!=0).expand_dims(-1)
     mask = nd.batch_dot(Q, K)
     return mask
+
+def bucket(batch):
+    max_length =get_length(batch).max()
+    return batch[:,:max_length,:]
