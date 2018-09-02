@@ -32,39 +32,49 @@ class Encoder(Block):
         self.head_count = head_count
         self.model_dim = model_dim
         self.drop_prob = drop_prob
+        self.dropout = dropout
         self.title_lstm = RNN.LSTM(
             self.embedding_dim, self.model_dim, True, self.drop_prob)
         self.abstract_lstm = RNN.LSTM(
             self.embedding_dim, self.model_dim, True, self.drop_prob)
-        self.title_linear = nn.Dense(self.model_dim, in_units= 2*self.model_dim)
-        self.abstract_linear = nn.Dense(self.model_dim, in_units= 2*self.model_dim)
-        self.final_linear = nn.Dense(self.model_dim, in_units= self.model_dim)
+        self.title_linear = nn.Dense(self.model_dim, flatten = False, in_units= 2*self.model_dim)
+        self.abstract_linear = nn.Dense(self.model_dim, flatten = False, in_units= 2*self.model_dim)
+        self.final_linear = nn.Dense(2*self.model_dim, flatten = False, in_units= self.model_dim)
         
        
         
         self.ta_mutal = MultiHeadAttentionCell(base_cell=base_cell, 
                                                query_units= 2*self.model_dim, use_bias=True,
                                           key_units = 2*self.model_dim, value_units= 2*self.model_dim, num_heads=self.head_count)
-        self.ta_mutal = MultiHeadAttentionCell(base_cell=base_cell, 
+        self.at_mutal = MultiHeadAttentionCell(base_cell=base_cell, 
                                                query_units= 2*self.model_dim, use_bias=True,
                                           key_units = 2*self.model_dim, value_units= 2*self.model_dim, num_heads=self.head_count)
-        self.ffn1 = ResBlock(2*self.model_dim, self.dropout)
-        self.ffn2 = ResBlock(2*self.model_dim, self.dropout)
-        self.W_G = nn.Dense(1, in_units= 4*self.model_dim)
-        self. ffn3 = ResBlock(2*self.model_dim)
+        self.self_attn = MultiHeadAttentionCell(base_cell=base_cell, 
+                                               query_units= 2*self.model_dim, use_bias=True,
+                                          key_units = 2*self.model_dim, value_units= 2*self.model_dim, num_heads=self.head_count)
+        self.ffn1 = Resblock(2*self.model_dim, self.dropout)
+        self.ffn2 = Resblock(2*self.model_dim, self.dropout)
+        self.W_G = nn.Dense(1, flatten = False, in_units= 4*self.model_dim)
+        self.ffn3 = Resblock(2*self.model_dim)
     def forward(self, x, y, x_mask, y_mask):
-        h_H,_ = self.title_lstm(x, x_mask)
-        h_S,_ = self.abstract_lstm(y, y_mask)
-        u_H,_ = self.ta_mutal(h_H, h_S, h_S, y_mask)
-        h_S_hat,_ = self.at_mutal(h_S, h_H, h_H, x_mask)
+        l_x = get_length(x_mask)
+        l_y = get_length(y_mask)
+        h_H, hidden_H= self.title_lstm(x, l_x)
+        h_S, hidden_S = self.abstract_lstm(y, l_y)
+        x_mask_ = return_mask(x_mask ,y_mask)
+        y_mask_ = return_mask(y_mask ,x_mask)
+        u_H,_ = self.ta_mutal(h_H, h_S, h_S, x_mask_)
+        h_S_hat,_ = self.at_mutal(h_S, h_H, h_H, y_mask_)
         u_H = self.ffn1(u_H)
         G_t = nd.sigmoid(self.W_G(nd.concat(h_S, h_S_hat, dim = -1))).squeeze()
-        h_S_ = nd.stack([nd.broadcast_mul(i,j.unsqueeze(1)) for (i,j) in zip(h_S, G_t)])
+        h_S_ = nd.stack(*[nd.broadcast_mul(i,j.expand_dims(1)) for (i,j) in zip(h_S, G_t)])
         u_S = self.ffn2(h_S_hat + h_S_)
         u_X = nd.concat(u_H, u_S, dim =1)
-        u_X, weight = self.self_attn(u_X, u_X, u_X)
+        mask_u = nd.concat(x_mask,y_mask, dim = -1)
+        mask_u = return_mask(mask_u, mask_u)
+        u_X, weight = self.self_attn(u_X, u_X, u_X, mask_u)
         u_X = self.ffn3(u_X)
-        s = self.final_linear(self.title_linear(h_H[:,-1,:])+ self.abstract_linear(h_S[:,-1,:]))
+        s = self.final_linear(self.title_linear(hidden_H)+ self.abstract_linear(hidden_S))
 
         return s, u_X, weight
  
