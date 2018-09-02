@@ -11,5 +11,5 @@ def return_mask(key,query):
     return mask
 
 def bucket(batch):
-    max_length =int(get_length(batch).max().asnumpy[0])
-    return batch[:,:max_length]
+    max_length = get_length(batch).max().asnumpy()[0]
+    return batch[:,:int(max_length)]
