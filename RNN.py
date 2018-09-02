@@ -41,7 +41,7 @@ class LSTM(Block):
                  input_size= num_inputs, i2h_weight_initializer ='Orthogonal', h2h_weight_initializer= 'Orthogonal'
                            )
         
-   def forward(self, x,length, (hidden,cell) =None):
+    def forward(self, x,length, (hidden,cell) =None):
       
         outputs = self.rnn(x) #outputs:[batch, seq_length, 2*num_hiddens]
         if hidden is not None:
