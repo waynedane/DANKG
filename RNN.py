@@ -37,7 +37,7 @@ class LSTM(Block):
             self.layout = 'NTC'
         else:
             self.layout = 'TNC'
-         self.rnn = rnn.LSTM(num_hiddens, layout = self.layout  dropout=drop_prob,bidirectional = True,
+         self.rnn = rnn.LSTM(num_hiddens, layout = self.layout, dropout=drop_prob,bidirectional = True,
                  input_size= num_inputs, i2h_weight_initializer ='Orthogonal', h2h_weight_initializer= 'Orthogonal'
                            )
         
