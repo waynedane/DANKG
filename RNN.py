@@ -33,7 +33,7 @@ class LSTM(Block):
         super(LSTM, self).__init__()
         self.drop_prob = drop_prob
         self.batch_first = batch_first
-        if batch_first = True:
+        if batch_first == True:
             self.layout = 'NTC'
         else:
             self.layout = 'TNC'
