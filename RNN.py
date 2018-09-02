@@ -44,7 +44,7 @@ class LSTM(Block):
     def forward(self, x,length, (hidden,cell) =None):
       
         outputs = self.rnn(x) #outputs:[batch, seq_length, 2*num_hiddens]
-        if hidden is not None:
+        if (hidden, cell) is not None:
             outputs, state = self.rnn(x,(hidden, cell))
         outputs = nd.transpose(outputs,(1,0,2))
         outputs = nd.SequenceMask(outputs, sequence_length=length,use_sequence_length=True, value=0)
