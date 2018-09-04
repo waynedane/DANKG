@@ -13,3 +13,12 @@ def return_mask(key,query):
 def bucket(batch):
     max_length = get_length(batch).max().asnumpy()[0]
     return batch[:,:int(max_length)]
+
+def grad_clipping(params, theta, ctx):
+    norm = nd.array([0.0], ctx)
+    for param in params:
+        norm += (param.grad ** 2).sum()
+    norm = norm.sqrt().asscalar()
+    if norm > theta:
+        for param in params:
+            param.grad[:] *= theta / norm
