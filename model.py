@@ -119,7 +119,7 @@ class Decoder(Block):
                 x[i][indice[i][j]] += weight[i][j]
         final_distribution = nd.log_softmax(P_g+P_c)
         
-        return final_distribution, hidden, cell, weight 
+        return final_distribution, hidden, cell, weight, P_g 
     
     def begin_cell(self, hidden)：
         cell = mx.nd.random.uniform(shape = hidden.shape)
@@ -143,16 +143,17 @@ class seq2seq(block):
         decoder_state, encoder_outputs, _ = encoder(x_ti, x_ab, ti_mask, ab_mask)
         cell = decoder.begin_cell()
         decoder_input = nd.array([1]*cur_batch_size)
-        
+        P_g_list =[]
         for i in range(len(y)):
-            prediction, decoder_state, cell, weight = decoder(decoder_input, decoder_state, cell, encoder_outputs, indice, mask)
+            prediction, decoder_state, cell, weight,P_g= decoder(decoder_input, decoder_state, cell, encoder_outputs, indice, mask)
+            P_g_list.append(P_g)
             loss_mask = (y[i]==2)
             decoder_input = prediction.argmax(axis=1)
             loss =self.loss()*loss_mask
             loss =loss.sum()
         loss = loss/len(y)
         
-        return loss
+        return loss, P_g_list
             
            
         
