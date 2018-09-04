@@ -137,12 +137,22 @@ class seq2seq(block):
         self.extended_size = extended_size
         self.encoder = Encoder(self.embedding_dim, self.head_count, self.model_dim, self.drop_prob, self.dropout)
         self.decoder = Decoder(self.embedding_dim, self.model_dim, self.dropout, self.head_count, self.vocab_size, self.extended_size)
-        
+        self.loss = mxnet.gluon.loss.SoftmaxCrossEntropyLoss(from_logits = True)
     def forward(self,x_ti, x_ab, ti_mask, ab_mask, y, indice):
-        hidden, outputs, _ = encoder(x_ti, x_ab, ti_mask, ab_mask)
+        cur_batch_size = ti_mask.shape[0]
+        decoder_state, encoder_outputs, _ = encoder(x_ti, x_ab, ti_mask, ab_mask)
         cell = decoder.begin_cell()
-        loss = []
+        decoder_input = nd.array([1]*cur_batch_size)
+        
         for i in range(len(y)):
-            prediction, hidden, cell, weight = decoder(y[i], hidden, cell, outputs, indice, mask)
+            prediction, decoder_state, cell, weight = decoder(decoder_input, decoder_state, cell, encoder_outputs, indice, mask)
+            loss_mask = (y[i]==2)
+            decoder_input = prediction.argmax(axis=1)
+            loss =self.loss()*loss_mask
+            loss =loss.sum()
+        loss = loss/len(y)
+        
+        return loss
+            
            
         
