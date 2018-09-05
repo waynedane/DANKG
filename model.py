@@ -147,7 +147,7 @@ class seq2seq(block):
         for i in range(len(y)):
             prediction, decoder_state, cell, weight,P_g= decoder(decoder_input, decoder_state, cell, encoder_outputs, indice, mask)
             P_g_list.append(P_g)
-            loss_mask = (y[i]==2)
+            loss_mask = (y[i]！=2)
             decoder_input = prediction.argmax(axis=1)
             loss =self.loss()*loss_mask
             loss =loss.sum()
