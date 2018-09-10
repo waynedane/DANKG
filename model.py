@@ -146,6 +146,7 @@ class seq2seq(block):
         cell = decoder.begin_cell()
         decoder_input = nd.array([1]*cur_batch_size)
         P_g_list =[]
+        loss_total = 0
         for i in range(len(y)):
             prediction, decoder_state, cell, weight,P_g= decoder(decoder_input, decoder_state, cell, encoder_outputs, indice, mask)
             P_g_list.append(P_g)
@@ -154,9 +155,10 @@ class seq2seq(block):
             decoder_input = y[i] if is_teacher else prediction.argmax(axis=1)
             loss =self.loss()*loss_mask
             loss =loss.sum()
-        loss = loss/len(y)
+            loss_total = loss_total+loss
+        loss_total = loss_total/len(y)
         
-        return loss, P_g_list
+        return loss_total, P_g_list
             
            
         
