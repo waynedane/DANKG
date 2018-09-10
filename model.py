@@ -3,6 +3,7 @@ from mxnet import nd
 from gluonnlp.model import MultiHeadAttentionCell,DotProductAttentionCell
 from mxnet.gluon import Block, nn, rnn
 import RNN
+import random
 
 base_cell = DotProductAttentionCell(scaled=True, dropout = 0.5)
 
@@ -126,7 +127,7 @@ class Decoder(Block):
         return cell
 
 class seq2seq(block):
-    def __init__(self，embedding_dim, head_count, model_dim, drop_prob, dropout, vocab_size, extended_size):
+    def __init__(self，embedding_dim, head_count, model_dim, drop_prob, dropout, vocab_size, extended_size, teacher_forcing_ratio=0.5):
         super(seq2seq, self).__init__()
         self.embedding_dim = embedding_dim
         self.head_count = head_count
@@ -135,6 +136,7 @@ class seq2seq(block):
         self.dropout = dropout
         self.vocab_size = vcab_size
         self.extended_size = extended_size
+        self.teacher_forcing = teacher_forcing_ratio
         self.encoder = Encoder(self.embedding_dim, self.head_count, self.model_dim, self.drop_prob, self.dropout)
         self.decoder = Decoder(self.embedding_dim, self.model_dim, self.dropout, self.head_count, self.vocab_size, self.extended_size)
         self.loss = mxnet.gluon.loss.SoftmaxCrossEntropyLoss(from_logits = True)
@@ -148,7 +150,8 @@ class seq2seq(block):
             prediction, decoder_state, cell, weight,P_g= decoder(decoder_input, decoder_state, cell, encoder_outputs, indice, mask)
             P_g_list.append(P_g)
             loss_mask = (y[i]！=2)
-            decoder_input = prediction.argmax(axis=1)
+            is_teacher = random.random() < self.teacher_forcing
+            decoder_input = y[i] if is_teacher else prediction.argmax(axis=1)
             loss =self.loss()*loss_mask
             loss =loss.sum()
         loss = loss/len(y)
