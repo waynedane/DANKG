@@ -107,7 +107,7 @@ class Decoder(Block):
     def forward(self,x, hidden, cell, u_X, indice, mask):
         batch_size = u_X.size(0)
         s_t, (hidden, cell) = self.decoder_lstm(x, (hidden,cell))
-        c_t, weight = sel.fnn(self.self_attn(s_t, u_X, u_X))
+        c_t, weight = sel.fnn(self.self_attn(s_t, u_X, u_X, mask))
         P_g = nd.softmax(self.V2(self.V1(nd.concat(s_t,c_t,dim=-1))))
         p_g = nd.sigmoid(self.W_c(c_t) + self.W_s(s_t) + self.W_x(x)).squeeze()
         P_g = nd.concat(P_g,nd.zeros(batch_size, self.extended_size),dim = -1)
@@ -140,25 +140,26 @@ class seq2seq(block):
         self.encoder = Encoder(self.embedding_dim, self.head_count, self.model_dim, self.drop_prob, self.dropout)
         self.decoder = Decoder(self.embedding_dim, self.model_dim, self.dropout, self.head_count, self.vocab_size, self.extended_size)
         self.loss = mxnet.gluon.loss.SoftmaxCrossEntropyLoss(from_logits = True)
-    def forward(self,x_ti, x_ab, ti_mask, ab_mask, y, indice):
+    def forward(self,x_ti, x_ab, ti_mask, ab_mask, trg, indice):
         cur_batch_size = ti_mask.shape[0]
         decoder_state, encoder_outputs, _ = encoder(x_ti, x_ab, ti_mask, ab_mask)
+        mask = nd.concat(ti_mask, ab_mask,dim=-1)
+        mask = return_mask(mask, nd.ones(cur_batch_size,1))
         cell = decoder.begin_cell()
         decoder_input = nd.array([1]*cur_batch_size)
         P_g_list =[]
         loss_total = 0
-        for i in range(len(y)):
+        for i in range(len(trg)):
             prediction, decoder_state, cell, weight,P_g= decoder(decoder_input, decoder_state, cell, encoder_outputs, indice, mask)
             P_g_list.append(P_g)
-            loss_mask = (y[i]！=2)
+            loss_mask = (trg[i]！=2)
             is_teacher = random.random() < self.teacher_forcing
-            decoder_input = y[i] if is_teacher else prediction.argmax(axis=1)
-            loss =self.loss()*loss_mask
+            decoder_input = trg[i] if is_teacher else prediction.argmax(axis=1)
+            loss =self.loss(prediction, trg[i])*loss_mask
             loss =loss.sum()
             loss_total = loss_total+loss
         loss_total = loss_total/len(y)
-        
-        return loss_total, P_g_list
+    
             
            
         
