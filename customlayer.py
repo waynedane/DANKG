@@ -9,5 +9,5 @@ class ScaleShift(nn.Block):
         #self.w = mx.gluon.Parameter('weight', shape=(1, self.vocab_size), init=mx.init.Xavier())
         #self.b = mx.gluon.Parameter('bias', shape=(1, self.vocab_size), init=mx.init.Zero())
     def forward(self,x):
-        out =self.w.data(x.context)*x+self.b.data(x.context)
+        out =self.w.data()*x+self.b.data()
         return out
