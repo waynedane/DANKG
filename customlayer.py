@@ -12,3 +12,11 @@ class ScaleShift(nn.Block):
     def forward(self,x):
         output =self.w.data()*x+self.b.data()
         return output
+
+class EmbeddingLayer(nn.Block):
+    def __init__(self, vocab_size, embedding_dim, **kwargs):
+        super(EmbeddingLyaer, self).__init__(**kwargs)
+        self.vocab_size = vocab_szie
+        self.dim_out = embedding_dim
+        self.embedding = nn.Embedding(self.vocab_size, self.dim_out)
+        
