@@ -4,11 +4,8 @@ from mxnet.gluon.data import Dataset
 import pickle
 class mydataset(Dataset):
     def __init__(self,path, set_model):
-        self.root = {'train':'trainset', 'valida': 'validaset', 'test': 'testset'}
-        self.path = os.path.join(path, self.root[set_model])
-        with open(self.path,'rb') as f:
-            data = pickle.load(f)
-        self.data = data
+        self.root = {'train':'train_w2i.npy', 'valida': 'valida_w2i.npy', 'test': 'test_w2i.npy'}
+        self.data = np.load(os.path.join(path, self.root[set_model]))
     def __getitem__(self,index):
         title = self.data[index][:20]
         abstract = self.data[index][20:470]
