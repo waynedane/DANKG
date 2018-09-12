@@ -22,3 +22,13 @@ def grad_clipping(params, theta, ctx):
     if norm > theta:
         for param in params:
             param.grad[:] *= theta / norm
+
+def generate_batch(t,a):
+    t = (t!=0)
+    max_t = int(t.sum(1).max().asscalar())
+    a = (a!=0)
+    max_a = int(a.sum(1).max().asscalar())
+    return t[:,:max_t], a[:,:max_a] 
+    
+    
+    
