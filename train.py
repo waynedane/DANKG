@@ -26,5 +26,6 @@ for index, instance in enumerate(dataset):
     t_indice, a_indice = utils.bucket(t), utils.bucket(a)
     title, abstract = utils.unk(t_indice), utils.unk(a_indice)
     t_mask, a_mask = (t_indice!=0), (a_indice!=0)
+    decoder_mask = mx.nd.concat(t_mask, a_mask, -1)
     
     
