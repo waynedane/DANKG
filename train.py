@@ -23,8 +23,8 @@ dataset = myDataLodaer('/home/dwy/DKGMA_data', 'train')
 
 for index, instance in enumerate(dataset):
     t,a,k = instance.as_in_context(ctx)
-    t_indice = utils.get_batch(t)
-    a_indice = utils.get_batch(a)
+    t_indice = utils.bucket(t)
+    a_indice = utils.bucket(a)
     title = utils.unk(t_indice)
     abstract = utils.unk(a_indice)
     
