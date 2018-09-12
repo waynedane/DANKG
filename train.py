@@ -11,6 +11,7 @@ Constant.dropout, Constant.tearcher_forcing, Constant.learning_rate
 
 #初始化模型
 net = model.seq2seq(Embedding_Dim, Head, Model_Dim, drop_prob, dropout, Vocab_Size, Extended_Size, tearcher_forcing)
+net.initialize(ctx=mx.gpu())
 
 
 dataset = myDataLodaer('/home/dwy/DKGMA_data', 'train')
