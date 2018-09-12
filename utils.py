@@ -30,5 +30,7 @@ def generate_batch(t,a):
     max_a = int(a.sum(1).max().asscalar())
     return t[:,:max_t], a[:,:max_a] 
     
-    
-    
+def unk(batch):
+    mask = (batch<50000)
+    indice = nd.where(mask, batch, 4*nd.ones_like(a))
+    return indice
