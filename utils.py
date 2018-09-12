@@ -11,7 +11,7 @@ def return_mask(key,query):
     return mask
 
 def bucket(batch):
-    max_length = get_length(batch).max().asnumpy()[0]
+    max_length = get_length(batch).max().asscalar()
     return batch[:,:int(max_length)]
 
 def grad_clipping(params, theta, ctx):
