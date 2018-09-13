@@ -20,12 +20,21 @@ net.initialize(ctx=mx.gpu())
 
 #创建数据迭代器
 dataset = myDataLodaer('/home/dwy/DKGMA_data', 'train')
+# 优化器
+trainer = gluon.Trainer(net.collect_params(), 'adam', {'lr': 1e-5, 'grad_clip': 2})
 
 for index, instance in enumerate(dataset):
+    total_loss = 
+    batchsize = instance.shape(0)
     t,a,k = instance.as_in_context(ctx)
     t_indice, a_indice = utils.bucket(t), utils.bucket(a)
     title, abstract = utils.unk(t_indice), utils.unk(a_indice)
     t_mask, a_mask = (t_indice!=0), (a_indice!=0)
-    decoder_mask = mx.nd.concat(t_mask, a_mask, -1)
+    indice = mx.nd.concat(t_indice, a_indice, -1)
+    with mx.autograd.record:
+        loss = net(title, abstract, t_mask, a_mask, indice)
+    loss.backward()
+    trainer.step(batch_size = batchsize)
+    
     
     
