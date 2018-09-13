@@ -20,6 +20,7 @@ net.initialize(ctx=mx.gpu())
 
 #创建数据迭代器
 dataset = myDataLodaer('/home/dwy/DKGMA_data', 'train')
+valida = myDataLodaer('/home/dwy/DKGMA_data', 'valida')
 # 优化器
 trainer = gluon.Trainer(net.collect_params(), 'adam', {'lr': 1e-5, 'grad_clip': 2})
 
@@ -42,10 +43,13 @@ for index, instance in enumerate(dataset):
     total_loss += loss.mean().asscalar()
     if (index+1)%100000 == 0:
         avg_loss = total_loss/(index+1)
+        valida_score = validation()
         print('epoch %d, avg loss %.4f, time %.2f' %(
         epoch, avg_loss, time()-tic))
         epoch = epoch+1
         total_loss = 0
+        
+        
     
     
     
