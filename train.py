@@ -23,8 +23,12 @@ dataset = myDataLodaer('/home/dwy/DKGMA_data', 'train')
 # 优化器
 trainer = gluon.Trainer(net.collect_params(), 'adam', {'lr': 1e-5, 'grad_clip': 2})
 
+from time import time
+tic = time()
+total_loss = .0
+epoch = 0
 for index, instance in enumerate(dataset):
-    total_loss = 
+    
     batchsize = instance.shape(0)
     t,a,k = instance.as_in_context(ctx)
     t_indice, a_indice = utils.bucket(t), utils.bucket(a)
@@ -35,6 +39,14 @@ for index, instance in enumerate(dataset):
         loss = net(title, abstract, t_mask, a_mask, indice)
     loss.backward()
     trainer.step(batch_size = batchsize)
+    total_loss += loss.mean().asscalar()
+    if (index+1)%100000 == 0:
+        avg_loss = total_loss/(index+1)
+        print('epoch %d, avg loss %.4f, time %.2f' %(
+        epoch, avg_loss, time()-tic))
+        epoch = epoch+1
+        total_loss = 0
+    
     
     
     
