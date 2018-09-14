@@ -6,7 +6,7 @@ import RNN
 import random
 from customlayer import *
 
-base_cell = DotProductAttentionCell(scaled=True, dropout = 0.5)
+base_cell = DotProductAttentionCell(scaled=True, dropout = 0.2)
 
 class Resblock(Block):
     
