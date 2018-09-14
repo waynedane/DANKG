@@ -4,6 +4,7 @@ from gluonnlp.model import MultiHeadAttentionCell,DotProductAttentionCell
 from mxnet.gluon import Block, nn, rnn
 import RNN
 import random
+from customlayer import *
 
 base_cell = DotProductAttentionCell(scaled=True, dropout = 0.5)
 
@@ -137,16 +138,18 @@ class seq2seq(block):
         self.vocab_size = vcab_size
         self.extended_size = extended_size
         self.teacher_forcing = teacher_forcing_ratio
+        self.embedding = EmbeddingLayer
         self.encoder = Encoder(self.embedding_dim, self.head_count, self.model_dim, self.drop_prob, self.dropout)
         self.decoder = Decoder(self.embedding_dim, self.model_dim, self.dropout, self.head_count, self.vocab_size, self.extended_size)
         self.loss = mxnet.gluon.loss.SoftmaxCrossEntropyLoss(from_logits = True)
     def forward(self,x_ti, x_ab, ti_mask, ab_mask, trg, indice):
         cur_batch_size = ti_mask.shape[0]
-        decoder_state, encoder_outputs, _ = encoder(x_ti, x_ab, ti_mask, ab_mask)
+        ti_input, ab_input = embedding(x_ti), embedding(x_ab)
+        decoder_state, encoder_outputs, _ = encoder(ti_input, ab_input, ti_mask, ab_mask)
         mask = nd.concat(ti_mask, ab_mask,dim=-1)
         mask = return_mask(mask, nd.ones(cur_batch_size,1))
         cell = decoder.begin_cell()
-        decoder_input = nd.array([1]*cur_batch_size)
+        decoder_input = embedding(nd.array([1]*cur_batch_size))
         P_g_list =[]
         loss_total = 0
         for i in range(len(trg)):
@@ -154,7 +157,7 @@ class seq2seq(block):
             P_g_list.append(P_g)
             loss_mask = (trg[i]！=2)
             is_teacher = random.random() < self.teacher_forcing
-            decoder_input = trg[i] if is_teacher else prediction.argmax(axis=1)
+            decoder_input = embedding(trg[i]) if is_teacher else embedding(prediction.argmax(axis=1))
             loss =self.loss(prediction, trg[i])*loss_mask
             loss =loss.sum()
             loss_total = loss_total+loss
