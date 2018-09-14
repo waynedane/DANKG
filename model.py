@@ -47,13 +47,13 @@ class Encoder(Block):
         
         self.ta_mutal = MultiHeadAttentionCell(base_cell=base_cell, 
                                                query_units= 2*self.model_dim, use_bias=True,
-                                          key_units = 2*self.model_dim, value_units= 2*self.model_dim, num_heads=self.head_count)
+                                          key_units = 2*self.model_dim, value_units= 2*self.model_dim, num_heads=self.head_count, weight_initializer= 'Xavier')
         self.at_mutal = MultiHeadAttentionCell(base_cell=base_cell, 
                                                query_units= 2*self.model_dim, use_bias=True,
-                                          key_units = 2*self.model_dim, value_units= 2*self.model_dim, num_heads=self.head_count)
+                                          key_units = 2*self.model_dim, value_units= 2*self.model_dim, num_heads=self.head_count, weight_initializer= 'Xavier')
         self.self_attn = MultiHeadAttentionCell(base_cell=base_cell, 
                                                query_units= 2*self.model_dim, use_bias=True,
-                                          key_units = 2*self.model_dim, value_units= 2*self.model_dim, num_heads=self.head_count)
+                                          key_units = 2*self.model_dim, value_units= 2*self.model_dim, num_heads=self.head_count, weight_initializer= 'Xavier')
         self.ffn1 = Resblock(2*self.model_dim, self.dropout)
         self.ffn2 = Resblock(2*self.model_dim, self.dropout)
         self.W_G = nn.Dense(1, flatten = False, in_units= 4*self.model_dim)
@@ -96,7 +96,7 @@ class Decoder(Block):
         h2h_weight_initializer = 'Orthogonal')
         self.self_attn = MultiHeadAttentionCell(base_cell=base_cell, 
                                                query_units= 2*self.model_dim, use_bias=True,
-                                          key_units = 2*self.model_dim, value_units= 2*self.model_dim, num_heads=self.head_count)
+                                          key_units = 2*self.model_dim, value_units= 2*self.model_dim, num_heads=self.head_count, weight_initializer= 'Xavier')
         self.fnn = Resblock(2*self.model_dim, self.dropout)
         self.V1 = nn.Dense(2*self.model_dim, in_units= 3*self.model_dim)
         self.V2 = nn.Dense(self.vocab_size, in_units= 2*self.model_dim)
