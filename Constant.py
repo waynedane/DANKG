@@ -7,3 +7,6 @@ drop_prob =0.2
 dropout = 0.5
 tearcher_forcing =0.5
 learning_rate = 0.0001
+unk = 1
+bos = 2
+
