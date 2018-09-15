@@ -46,3 +46,8 @@ def dynamic_idx(instance):
             instance[j] = v_to_oov[instance[j]]
             
     return instance
+
+def dynamic_idx_batch(batch):
+    for index,_ in enumerate(batch):
+        batch[index] = dynamic_idx(batch[index])
+    return batch
