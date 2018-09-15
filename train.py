@@ -12,15 +12,15 @@ Constant.Embedding_Dim, Constant.Vocab_Size, Constant.Extended_Size,\
 Constant.Model_Dim, Constant.Head, Constant.drop_prob,\
 Constant.dropout, Constant.tearcher_forcing, Constant.learning_rate
 #定义gpu
-ctx = mxnet.gpu()
+ctx_0 = mxnet.gpu()
 
 #初始化模型
-net = model.seq2seq(Embedding_Dim, Head, Model_Dim, drop_prob, dropout, Vocab_Size, Extended_Size, tearcher_forcing)
-net.initialize(ctx=mx.gpu())
+net = model.seq2seq(Embedding_Dim, Head, Model_Dim, drop_prob, dropout, Vocab_Size, Extended_Size, ctx_0, tearcher_forcing)
+net.initialize(ctx= ctx_0)
 
 #创建数据迭代器
 dataset = myDataLodaer('/home/dwy/DKGMA_data', 'train')
-valida = myDataLodaer('/home/dwy/DKGMA_data', 'valida')
+validaset = myDataLodaer('/home/dwy/DKGMA_data', 'valida')
 # 优化器
 trainer = gluon.Trainer(net.collect_params(), 'adam', {'lr': 1e-5, 'grad_clip': 2})
 
@@ -48,6 +48,10 @@ for index, instance in enumerate(dataset):
         epoch, avg_loss, time()-tic))
         epoch = epoch+1
         total_loss = 0
+        
+        valida_loss = valida(validaset)
+        print('epoch %d, validation loss: %.4f' %(
+        epoch,  valida_loss))
         
         
     
