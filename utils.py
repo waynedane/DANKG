@@ -34,3 +34,15 @@ def unk(batch):
     mask = (batch<50000)
     indice = nd.where(mask, batch, 4*nd.ones_like(a))
     return indice
+
+def dynamic_idx(instance):
+    v = set(instance)
+    oov = [idx for idx in v if idx>49999]
+    v_to_oov={}
+    for i in oov:
+        v_to_oov[i] = len(v_to_oov)+49999
+    for j in range(len(instance)):
+        if instance[j]>49999:
+            instance[j] = v_to_oov[instance[j]]
+            
+    return instance
