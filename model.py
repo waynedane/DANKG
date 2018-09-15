@@ -81,8 +81,9 @@ class Encoder(Block):
         return s, u_X, weight
  
 class Decoder(Block):
-    def __init__(self, embedding_dim, model_dim, dropout, head_count, vocab_size, extended_size):
+    def __init__(self, embedding_dim, model_dim, dropout, head_count, vocab_size, extended_size,gpu):
         super(Decoder,self).__init__()
+        self.ctx = gpu
         self.embedding_dim = embedding_dim
         self.model_dim = model_dim
         self.dropout = dropout
@@ -116,7 +117,7 @@ class Decoder(Block):
         p_c = 1-p_g 
         P_g = P_g*p_g.expand_dims(-1)
         weight = weight*p_c.expand_dims(-1)
-        P_c = nd.zeros([batch_size, self.extended_size])
+        P_c = nd.zeros([batch_size, self.extended_size], ctx= self.ctx)
         
         for i in range(batch_size):
             for j in range(self.extend_size):
@@ -131,8 +132,9 @@ class Decoder(Block):
         return cell
 
 class seq2seq(block):
-    def __init__(self，embedding_dim, head_count, model_dim, drop_prob, dropout, vocab_size, extended_size, teacher_forcing_ratio=0.5):
+    def __init__(self，embedding_dim, head_count, model_dim, drop_prob, dropout, vocab_size, extended_size, gpu, teacher_forcing_ratio=0.5):
         super(seq2seq, self).__init__()
+        self.ctx = gpu
         self.embedding_dim = embedding_dim
         self.head_count = head_count
         self.model_dim = model_dim
@@ -143,7 +145,7 @@ class seq2seq(block):
         self.teacher_forcing = teacher_forcing_ratio
         self.embedding = EmbeddingLayer
         self.encoder = Encoder(self.embedding_dim, self.head_count, self.model_dim, self.drop_prob, self.dropout)
-        self.decoder = Decoder(self.embedding_dim, self.model_dim, self.dropout, self.head_count, self.vocab_size, self.extended_size)
+        self.decoder = Decoder(self.embedding_dim, self.model_dim, self.dropout, self.head_count, self.vocab_size, self.extended_size,self.ctx)
         self.loss = mxnet.gluon.loss.SoftmaxCrossEntropyLoss(from_logits = True)
     def forward(self,x_ti, x_ab, ti_mask, ab_mask, trg, indice):
         cur_batch_size = ti_mask.shape[0]
