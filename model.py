@@ -5,7 +5,7 @@ from mxnet.gluon import Block, nn, rnn
 import RNN
 import random
 from customlayer import *
-
+import Constant
 base_cell = DotProductAttentionCell(scaled=True, dropout = 0.2)
 
 class Resblock(Block):
@@ -109,8 +109,9 @@ class Decoder(Block):
         batch_size = u_X.size(0)
         s_t, (hidden, cell) = self.decoder_lstm(x, (hidden,cell))
         c_t, weight = sel.fnn(self.self_attn(s_t, u_X, u_X, mask))
-        P_g = nd.softmax(self.V2(self.V1(nd.concat(s_t,c_t,dim=-1))))
-        p_g = nd.sigmoid(self.W_c(c_t) + self.W_s(s_t) + self.W_x(x)).squeeze()
+        weight = weight.squeeze().sum(1)/2
+        P_g = nd.softmax(self.V2(self.V1(nd.concat(s_t.squeeze(),c_t.squeeze(),dim=-1))))
+        p_g = nd.sigmoid(self.W_c(c_t) + self.W_s(s_t) + self.W_x(x))
         P_g = nd.concat(P_g,nd.zeros(batch_size, self.extended_size),dim = -1)
         p_c = 1-p_g 
         P_g = P_g*p_g.expand_dims(-1)
@@ -149,7 +150,7 @@ class seq2seq(block):
         mask = nd.concat(ti_mask, ab_mask,dim=-1)
         mask = return_mask(mask, nd.ones(cur_batch_size,1))
         cell = decoder.begin_cell()
-        decoder_input = embedding(nd.array([1]*cur_batch_size))
+        decoder_input = embedding(nd.array([Constant.bos]*cur_batch_size))
         P_g_list =[]
         loss_total = 0
         for i in range(len(trg)):
