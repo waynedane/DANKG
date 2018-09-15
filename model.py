@@ -117,9 +117,11 @@ class Decoder(Block):
         P_g = P_g*p_g.expand_dims(-1)
         weight = weight*p_c.expand_dims(-1)
         P_c = nd.zeros([batch_size, self.extended_size])
+        
         for i in range(batch_size):
             for j in range(self.extend_size):
-                x[i][indice[i][j]] += weight[i][j]
+                P_c[i][indice[i][j]] += weight[i][j]
+        P_c = P_c*p_c.expand_dims(-1)
         final_distribution = nd.log_softmax(P_g+P_c)
         
         return final_distribution, hidden, cell, weight, P_g 
