@@ -33,15 +33,19 @@ Constant.dropout, Constant.tearcher_forcing, Constant.learning_rate
 ctx_0 = mxnet.gpu()
 
 #初始化模型
-net = model.seq2seq(Embedding_Dim, Head, Model_Dim, drop_prob, dropout, Vocab_Size, Extended_Size, ctx_0, tearcher_forcing)
+#net = model.seq2seq(Embedding_Dim, Head, Model_Dim, drop_prob, dropout, Vocab_Size, Extended_Size, ctx_0, tearcher_forcing)
+embedding = 
+encoder =
+decoder =
 net.initialize(ctx= ctx_0)
 
 #创建数据迭代器
 trainset = myDataLodaer('/home/dwy/DKGMA_data', 'train')
 validaset = myDataLodaer('/home/dwy/DKGMA_data', 'valida')
 # 优化器
-trainer = gluon.Trainer(net.collect_params(), 'adam', {'lr': 1e-5, 'grad_clip': 2})
-
+embedding.embedding.collect_params().setattr('grad_req', 'null') #预训练的词嵌入层不参与训练。
+en_trainer = gluon.Trainer(encoder.collect_params(), 'adam', {'lr': 1e-5, 'grad_clip': 2})
+de_trainer = gluon.Trainer(decoder.collect_params(), 'adam', {'lr': 1e-5, 'grad_clip': 2})
 from time import time
 tic = time()
 total_loss = .0
@@ -53,13 +57,17 @@ for index, instance in enumerate(traindata):
     batchsize = instance.shape(0)
     t,a,k = instance.as_in_context(ctx)
     t_indice, a_indice = utils.bucket(t), utils.bucket(a)
-    title, abstract = utils.unk(t_indice), utils.unk(a_indice)
+    #title, abstract = utils.unk(t_indice), utils.unk(a_indice)
     t_mask, a_mask = (t_indice!=0), (a_indice!=0)
     indice = mx.nd.concat(t_indice, a_indice, -1)
+    
+    
     with mx.autograd.record:
+        title, abstract = embedding(title), embedding(abstract)
         loss = net(title, abstract, t_mask, a_mask, indice)
     loss.backward()
-    trainer.step(batch_size = batchsize)
+    de_trainer.step(batch_size = batchsize)
+    en_trainer.step(batch_size = batchsize)
     total_loss += loss.mean().asscalar()
     if (index+1)%100000 == 0:
         avg_loss = total_loss/(100000)
