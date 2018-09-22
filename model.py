@@ -104,7 +104,8 @@ class Decoder(Block):
         self.W_x = nn.Dense(1)
  
 
-    def forward(self,x, hidden, cell, u_X, indice, mask):
+    def forward(self,x, state):
+        hidden, cell, u_X, indice, mask = state
         batch_size = u_X.size(0)
         s_t, (hidden, cell) = self.decoder_lstm(x, (hidden,cell))
         c_t, weight = sel.fnn(self.self_attn(s_t, u_X, u_X, mask))
@@ -122,7 +123,7 @@ class Decoder(Block):
                 P_c[i][indice[i][j]] += weight[i][j]
         P_c = P_c*p_c.expand_dims(-1)
         final_distribution = nd.log_softmax(P_g+P_c)
-        
+        state = (hidden, cell, u_X,
         return final_distribution, hidden, cell, weight, P_g 
     
     def begin_cell(self, hidden)：
