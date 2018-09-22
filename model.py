@@ -77,7 +77,7 @@ class Encoder(Block):
         u_X = self.ffn3(u_X)
         s = self.final_linear(self.title_linear(hidden_H)+ self.abstract_linear(hidden_S))
 
-        return [s, u_X], weight # s refers to deocder intial hidden state, u_X refers to memory
+        return s, u_X, weight # s refers to deocder intial hidden state, u_X refers to memory
  
 class Decoder(Block):
     def __init__(self, embedding_dim, model_dim, dropout, head_count, vocab_size, extended_size,gpu):
@@ -168,7 +168,7 @@ class seq2seq(block):
         loss_total = loss_total/len(y)
     
     
-def seq2seq(embedding, encoder, decoder, x_ti, x_ab ,ti_mask ,ab_mask, trg, indcie):
+def seq2seq(embedding, encoder, decoder, x_ti, x_ab ,ti_mask ,ab_mask, trg, indice):
     loss_fun = mxnet.gluon.loss.SoftmaxCrossEntropyLoss(from_logits = True)
     cur_batch_size = ti_mask.shape[0]
     ti_input, ab_input = embedding(x_ti), embedding(x_ab)
@@ -176,17 +176,18 @@ def seq2seq(embedding, encoder, decoder, x_ti, x_ab ,ti_mask ,ab_mask, trg, indc
     mask = nd.concat(ti_mask, ab_mask,dim=-1)
     mask = return_mask(mask, nd.ones(cur_batch_size,1))
     cell = decoder.begin_cell()
+    state = (decoder_state, cell, encoder_outputs, indice, mask)
     decoder_input = embedding(nd.array([Constant.bos]*cur_batch_size))
     P_g_list =[]
     loss_total = 0
     for i in range(len(trg)):
-        prediction, decoder_state, cell, weight,P_g= decoder(decoder_input, decoder_state, cell, encoder_outputs, indice, mask)
+        prediction, state, weight,P_g= decoder(decoder_input, state)
         P_g_list.append(P_g.sum(0)/cur_batch_size)
         loss_mask = (trg[i]！=0)
         is_teacher = random.random() < self.teacher_forcing
         decoder_input = embedding(trg[i]) if is_teacher else embedding(prediction.argmax(axis=1))
         loss = loss_fun(prediction, trg[i])*loss_mask
-        loss =loss.sum()
+        loss = loss.sum()
         loss_total = loss_total+loss
     loss_total = loss_total/len(y)
     return loss_total, P_g_list
