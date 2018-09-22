@@ -30,7 +30,6 @@ class Encoder(Block):
     
     def __init__(self, embedding_dim, head_count, model_dim, drop_prob, dropout):
         super(Encoder, self).__init__()
-        self.embedding_dim = embedding_dim
         self.head_count = head_count
         self.model_dim = model_dim
         self.drop_prob = drop_prob
@@ -78,13 +77,12 @@ class Encoder(Block):
         u_X = self.ffn3(u_X)
         s = self.final_linear(self.title_linear(hidden_H)+ self.abstract_linear(hidden_S))
 
-        return s, u_X, weight
+        return [s, u_X], weight # s refers to deocder intial hidden state, u_X refers to memory
  
 class Decoder(Block):
     def __init__(self, embedding_dim, model_dim, dropout, head_count, vocab_size, extended_size,gpu):
         super(Decoder,self).__init__()
         self.ctx = gpu
-        self.embedding_dim = embedding_dim
         self.model_dim = model_dim
         self.dropout = dropout
         self.head_count = head_count
