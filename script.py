@@ -2,7 +2,7 @@ import pickle
 import numpy as np
 def getdata(path):
     path =path.split('.')
-    if path[-1] =='pkl'
+    if path[-1] =='pkl':
         with open(path,'rb') as f:
             data = pickle.load(f)
     data = np.load(path)
