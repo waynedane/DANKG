@@ -1,8 +1,11 @@
 import pickle
 import numpy as np
 def getdata(path):
-    with open(path,'rb') as f:
-        data = pickle.load(f)
+    path =path.split('.')
+    if path[-1] =='pkl'
+        with open(path,'rb') as f:
+            data = pickle.load(f)
+    data = np.load(path)
     return data
 
 def process(list_of_string):
