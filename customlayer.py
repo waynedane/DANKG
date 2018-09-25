@@ -1,5 +1,7 @@
 from mxnet.gluon import nn
 import mxnet as mx
+from mxnet.gluon import HybridBlock
+from mxnet.gluon.loss import SoftmaxCELos
 
 class ScaleShift(nn.Block):
     def __init__(self, vocab_size, **kwargs):
@@ -24,4 +26,36 @@ class EmbeddingLayer(nn.Block):
     def forward(self,x):
         return self.embedding(x)
         
-        
+from mxnet.gluon.loss import SoftmaxCELoss
+
+
+class SoftmaxCEMaskedLoss(SoftmaxCELoss):
+    """Wrapper of the SoftmaxCELoss that supports valid_length as the input
+
+    """
+    def hybrid_forward(self, F, pred, label, valid_length): # pylint: disable=arguments-differ
+        """
+
+        Parameters
+        ----------
+        F
+        pred : Symbol or NDArray
+            Shape (batch_size, length, V)
+        label : Symbol or NDArray
+            Shape (batch_size, length)
+        valid_length : Symbol or NDArray
+            Shape (batch_size, )
+        Returns
+        -------
+        loss : Symbol or NDArray
+            Shape (batch_size,)
+        """
+        if self._sparse_label:
+            sample_weight = F.cast(F.expand_dims(F.ones_like(label), axis=-1), dtype=np.float32)
+        else:
+            sample_weight = F.ones_like(label)
+        sample_weight = F.SequenceMask(sample_weight,
+                                       sequence_length=valid_length,
+                                       use_sequence_length=True,
+                                       axis=1)
+        return super(SoftmaxCEMaskedLoss, self).hybrid_forward(F, pred, label, sample_weight)
