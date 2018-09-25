@@ -2,6 +2,7 @@ from mxnet.gluon import nn
 import mxnet as mx
 from mxnet.gluon import HybridBlock
 from mxnet.gluon.loss import SoftmaxCELos
+from mxnet import nd
 
 class ScaleShift(nn.Block):
     def __init__(self, vocab_size, **kwargs):
@@ -33,7 +34,7 @@ class SoftmaxCEMaskedLoss(SoftmaxCELoss):
     """Wrapper of the SoftmaxCELoss that supports valid_length as the input
 
     """
-    def hybrid_forward(self, F, pred, label, valid_length): # pylint: disable=arguments-differ
+    def forward(self,  pred, label, valid_length): # pylint: disable=arguments-differ
         """
 
         Parameters
@@ -51,11 +52,11 @@ class SoftmaxCEMaskedLoss(SoftmaxCELoss):
             Shape (batch_size,)
         """
         if self._sparse_label:
-            sample_weight = F.cast(F.expand_dims(F.ones_like(label), axis=-1), dtype=np.float32)
+            sample_weight = nd.cast(nd.expand_dims(nd.ones_like(label), axis=-1), dtype=np.float32)
         else:
-            sample_weight = F.ones_like(label)
-        sample_weight = F.SequenceMask(sample_weight,
+            sample_weight = nd.ones_like(label)
+        sample_weight = nd.SequenceMask(sample_weight,
                                        sequence_length=valid_length,
                                        use_sequence_length=True,
                                        axis=1)
-        return super(SoftmaxCEMaskedLoss, self).hybrid_forward(F, pred, label, sample_weight)
+        return super(SoftmaxCEMaskedLoss, self).forward( pred, label, sample_weight)
