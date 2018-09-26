@@ -1,4 +1,5 @@
 import os
+import numpy as np
 import mxnet as mx
 from mxnet.gluon.data import Dataset
 import pickle
