@@ -1,6 +1,7 @@
 import mxnet as mx
 from mxnet import nd
 import mxnet.gluon.rnn as rnn
+from mxnet.gluon import nn
 class GRU(nn.Block):
     def __init__(self, num_inputs, num_hiddens, batch_first, drop_prob):
         super(GRU, self).__init__()
