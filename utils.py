@@ -32,7 +32,7 @@ def generate_batch(t,a):
     
 def unk(batch):
     mask = (batch<50000)
-    indice = nd.where(mask, batch, 4*nd.ones_like(a))
+    indice = nd.where(mask, batch, 4*nd.ones_like(batch))
     return indice
 
 def dynamic_idx(instance):
